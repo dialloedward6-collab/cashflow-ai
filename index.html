@@ -144,6 +144,22 @@ h2{font-size:19px}
 
 </div>
 
+<div class="card">
+
+<h2>🔐 Sauvegarde et restauration</h2>
+
+<p>Enregistre une copie de tes données ou restaure une sauvegarde précédente.</p>
+
+<button onclick="exportBackup()">📥 Télécharger ma sauvegarde</button>
+
+<button class="secondary" onclick="document.getElementById('backupFile').click()">📤 Restaurer une sauvegarde</button>
+
+<input id="backupFile" type="file" accept=".json,application/json" style="display:none" onchange="importBackup(event)">
+
+<p style="color:#94a3b8;font-size:13px">Conseil : garde ton fichier de sauvegarde dans un endroit sûr.</p>
+
+</div>
+
 </div>
 
 <script>
@@ -189,8 +205,6 @@ function amount(o){return Number(o.amount||o.total||o.value||0)}
 function saleName(o){return o.clientName||o.name||o.client||"Client"}
 
 function paid(o){
-
-  // Les anciennes ventes sont considérées comme déjà payées.
 
   if(o.paidAmount===undefined||o.paidAmount===null)return amount(o);
 
@@ -337,6 +351,90 @@ function deleteOperation(i){
     operations.splice(i,1);save();
 
   }
+
+}
+
+function exportBackup(){
+
+  const data={
+
+    app:"CashFlow AI",
+
+    version:1,
+
+    backupDate:new Date().toISOString(),
+
+    clients:clients,
+
+    operations:operations
+
+  };
+
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+
+  const url=URL.createObjectURL(blob);
+
+  const a=document.createElement("a");
+
+  a.href=url;
+
+  a.download="cashflow-ai-backup-"+new Date().toISOString().slice(0,10)+".json";
+
+  document.body.appendChild(a);
+
+  a.click();
+
+  a.remove();
+
+  URL.revokeObjectURL(url);
+
+  alert("Sauvegarde téléchargée. Garde ce fichier en lieu sûr.");
+
+}
+
+function importBackup(event){
+
+  const file=event.target.files[0];
+
+  if(!file)return;
+
+  const reader=new FileReader();
+
+  reader.onload=function(){
+
+    try{
+
+      const data=JSON.parse(reader.result);
+
+      if(!data||!Array.isArray(data.clients)||!Array.isArray(data.operations)){
+
+        alert("Ce fichier ne ressemble pas à une sauvegarde CashFlow AI valide.");
+
+        return;
+
+      }
+
+      if(!confirm("Restaurer cette sauvegarde ? Les données actuelles seront remplacées par celles du fichier."))return;
+
+      clients=data.clients;
+
+      operations=data.operations;
+
+      save();
+
+      alert("Sauvegarde restaurée avec succès !");
+
+    }catch(e){
+
+      alert("Impossible de lire ce fichier de sauvegarde.");
+
+    }
+
+    event.target.value="";
+
+  };
+
+  reader.readAsText(file);
 
 }
 
