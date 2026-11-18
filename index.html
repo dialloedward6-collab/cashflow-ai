@@ -16,43 +16,51 @@
 
 *{box-sizing:border-box}
 
-body{margin:0;padding:18px;background:#0b1220;color:white;font-family:Arial,sans-serif}
+body{margin:0;font-family:Arial,sans-serif;background:#0b1220;color:#f1f5f9;padding:16px}
 
-header{padding:15px 0}
+.container{max-width:950px;margin:auto}
 
-h1{color:#39d98a;font-size:28px;margin-bottom:5px}
+h1{color:#22c55e;margin-bottom:4px}
 
-.sub,.label{color:#9ca3af}
+.subtitle{color:#94a3b8;margin-top:0}
 
-.card{background:#172235;padding:18px;border-radius:14px;margin:14px 0}
+.card{background:#151f30;border:1px solid #263448;border-radius:14px;padding:18px;margin:16px 0}
 
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 
-.value{font-size:20px;font-weight:bold;color:#39d98a;margin-top:9px}
+.stat{background:#1d293b;padding:16px;border-radius:12px}
 
-input,select{width:100%;padding:14px;margin:7px 0;background:#26364c;color:white;border:0;border-radius:8px;font-size:16px}
+.stat small{color:#94a3b8;display:block;margin-bottom:8px}
 
-button{padding:12px;border:0;border-radius:8px;background:#39d98a;color:#07130d;font-weight:bold;font-size:14px;margin-top:8px}
+.stat strong{font-size:22px}
+
+.green{color:#22c55e}
+
+.red{color:#fb7185}
+
+input,select,button{width:100%;padding:12px;margin:6px 0;border-radius:9px;border:1px solid #34445a;font-size:15px}
+
+input,select{background:#0d1726;color:white}
+
+button{background:#22c55e;color:#06210e;font-weight:bold;border:0;cursor:pointer}
+
+button.secondary{background:#334155;color:white}
+
+button.danger{background:#7f1d1d;color:white}
+
+button.whatsapp{background:#16a34a;color:white}
+
+.item{background:#0f1928;padding:12px;border-radius:10px;margin:10px 0;border:1px solid #28374d}
+
+.item strong{font-size:16px}
+
+.item p{margin:6px 0;color:#cbd5e1}
+
+hr{border:0;border-top:1px solid #263448;margin:16px 0}
 
 h2{font-size:19px}
 
-li{list-style:none;padding:12px 0;border-bottom:1px solid #344258}
-
-ul{padding:0;margin:0}
-
-.secondary{background:#344258;color:white}
-
-.danger{background:#a83d48;color:white}
-
-small{color:#9ca3af}
-
-.action{width:auto;padding:8px 10px}
-
-.item{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-
-.item-info{flex:1;min-width:140px}
-
-.whatsapp{background:#25D366;color:white}
+@media(min-width:650px){.stats{grid-template-columns:repeat(3,1fr)}}
 
 </style>
 
@@ -60,429 +68,383 @@ small{color:#9ca3af}
 
 <body>
 
-<header>
+<div class="container">
 
-<h1>CashFlow AI</h1>
+<h1>💚 CashFlow AI</h1>
 
-<p class="sub">Votre gestion commerciale intelligente</p>
+<p class="subtitle">Gestion simple de tes ventes, dépenses et paiements.</p>
 
-</header>
+<div class="stats">
 
-<h2>Tableau de bord</h2>
+<div class="stat"><small>Ventes totales</small><strong id="totalSales">0 FCFA</strong></div>
 
-<div class="grid">
+<div class="stat"><small>Dépenses</small><strong id="totalExpenses">0 FCFA</strong></div>
 
-<div class="card"><div class="label">VENTES</div><div class="value" id="sales">0 FCFA</div></div>
+<div class="stat"><small>Bénéfice</small><strong id="profit">0 FCFA</strong></div>
 
-<div class="card"><div class="label">DÉPENSES</div><div class="value" id="expenses">0 FCFA</div></div>
+<div class="stat"><small>Argent encaissé</small><strong class="green" id="collected">0 FCFA</strong></div>
 
-<div class="card"><div class="label">BÉNÉFICES</div><div class="value" id="profit">0 FCFA</div></div>
+<div class="stat"><small>Dettes clients</small><strong class="red" id="debts">0 FCFA</strong></div>
 
-<div class="card"><div class="label">CLIENTS</div><div class="value" id="clientCount">0</div></div>
+<div class="stat"><small>Clients</small><strong id="clientCount">0</strong></div>
 
 </div>
 
 <div class="card">
 
-<h2>Ajouter un client</h2>
+<h2>👤 Ajouter un client</h2>
 
 <input id="clientName" placeholder="Nom du client">
 
-<input id="clientPhone" type="tel" placeholder="Téléphone (ex: 77 123 45 67)">
+<input id="clientPhone" placeholder="Téléphone (ex : 77 123 45 67)">
 
-<button onclick="addClient()">+ Enregistrer le client</button>
-
-</div>
-
-<div class="card">
-
-<h2>Mes clients</h2>
-
-<input id="searchClient" placeholder="Rechercher un client..." oninput="renderClients()">
-
-<ul id="clientList"></ul>
+<button onclick="addClient()">Ajouter le client</button>
 
 </div>
 
 <div class="card">
 
-<h2>Enregistrer une vente</h2>
+<h2>💰 Enregistrer une vente</h2>
 
-<select id="saleClient"><option value="">Choisir un client (facultatif)</option></select>
+<input id="saleName" placeholder="Nom du client (facultatif)">
 
-<input id="saleName" placeholder="Nom du client si non enregistré">
+<input id="saleAmount" type="number" min="0" placeholder="Montant total de la vente (FCFA)">
 
-<input id="saleAmount" type="number" min="1" placeholder="Montant en FCFA">
+<input id="salePaid" type="number" min="0" placeholder="Montant payé aujourd'hui (FCFA)">
 
-<button onclick="addSale()">+ Enregistrer la vente</button>
+<button onclick="addSale()">Enregistrer la vente</button>
 
 </div>
 
 <div class="card">
 
-<h2>Enregistrer une dépense</h2>
+<h2>📉 Enregistrer une dépense</h2>
 
 <input id="expenseName" placeholder="Description de la dépense">
 
-<input id="expenseAmount" type="number" min="1" placeholder="Montant en FCFA">
+<input id="expenseAmount" type="number" min="0" placeholder="Montant (FCFA)">
 
-<button onclick="addExpense()">+ Enregistrer la dépense</button>
+<button onclick="addExpense()">Enregistrer la dépense</button>
 
 </div>
 
 <div class="card">
 
-<h2>Historique des opérations</h2>
+<h2>📋 Liste des clients</h2>
 
-<ul id="history"></ul>
+<div id="clientsList"></div>
+
+</div>
+
+<div class="card">
+
+<h2>📜 Historique des opérations</h2>
+
+<div id="history"></div>
+
+</div>
 
 </div>
 
 <script>
 
-let clients=JSON.parse(localStorage.getItem("cf_clients")||"[]");
+const money = n => (Number(n)||0).toLocaleString("fr-FR")+" FCFA";
 
-let operations=JSON.parse(localStorage.getItem("cashflow_operations")||"[]");
+function readStore(key){
 
-operations.forEach(o=>{if(!o.id)o.id=Date.now()+Math.random()});
+  try{return JSON.parse(localStorage.getItem(key)||"[]")}
 
-function money(n){
-
-return Number(n).toLocaleString("fr-FR")+" FCFA";
+  catch(e){return []}
 
 }
 
-function saveData(){
+let clients=readStore("cf_clients");
 
-localStorage.setItem("cf_clients",JSON.stringify(clients));
+let operations=readStore("cashflow_operations");
 
-localStorage.setItem("cashflow_operations",JSON.stringify(operations));
+function save(){
 
-render();
+  localStorage.setItem("cf_clients",JSON.stringify(clients));
+
+  localStorage.setItem("cashflow_operations",JSON.stringify(operations));
+
+  render();
+
+}
+
+function normType(o){
+
+  let t=String(o.type||"").toLowerCase();
+
+  if(["sale","sales","vente","vendu"].includes(t))return "sale";
+
+  if(["expense","expenses","dépense","depense"].includes(t))return "expense";
+
+  return t;
+
+}
+
+function amount(o){return Number(o.amount||o.total||o.value||0)}
+
+function saleName(o){return o.clientName||o.name||o.client||"Client"}
+
+function paid(o){
+
+  // Les anciennes ventes sont considérées comme déjà payées.
+
+  if(o.paidAmount===undefined||o.paidAmount===null)return amount(o);
+
+  return Math.min(amount(o),Math.max(0,Number(o.paidAmount)||0));
+
+}
+
+function due(o){return Math.max(0,amount(o)-paid(o))}
+
+function phoneOf(c){return c.phone||c.telephone||c.tel||""}
+
+function nameOf(c){return c.name||c.clientName||"Client"}
+
+function phoneDigits(p){return String(p||"").replace(/\D/g,"")}
+
+function whatsappLink(phone,message){
+
+  let p=phoneDigits(phone);
+
+  if(p.length===9)p="221"+p;
+
+  return "https://wa.me/"+p+"?text="+encodeURIComponent(message);
 
 }
 
 function addClient(){
 
-const name=document.getElementById("clientName").value.trim();
+  const name=document.getElementById("clientName").value.trim();
 
-const phone=document.getElementById("clientPhone").value.trim();
+  const phone=document.getElementById("clientPhone").value.trim();
 
-if(!name){alert("Entrez le nom du client.");return;}
+  if(!name){alert("Entre le nom du client.");return;}
 
-clients.push({id:Date.now()+Math.random(),name,phone});
+  clients.push({name,phone});
 
-document.getElementById("clientName").value="";
+  document.getElementById("clientName").value="";
 
-document.getElementById("clientPhone").value="";
+  document.getElementById("clientPhone").value="";
 
-saveData();
-
-alert("Client enregistré !");
-
-}
-
-function deleteClient(id){
-
-const client=clients.find(c=>c.id==id);
-
-if(!client)return;
-
-if(confirm("Supprimer le client "+client.name+" ?")){
-
-clients=clients.filter(c=>c.id!=id);
-
-saveData();
-
-}
-
-}
-
-function whatsapp(phone,name){
-
-let number=phone.replace(/\D/g,"");
-
-if(number.startsWith("00"))number=number.substring(2);
-
-if(number.length===9)number="221"+number;
-
-const message="Bonjour "+name+", je vous contacte concernant nos échanges.";
-
-const url="https://wa.me/"+number+"?text="+encodeURIComponent(message);
-
-window.open(url,"_blank");
-
-}
-
-function renderClients(){
-
-const list=document.getElementById("clientList");
-
-const search=document.getElementById("searchClient").value.toLowerCase();
-
-list.innerHTML="";
-
-clients.filter(c=>
-
-(c.name||"").toLowerCase().includes(search)||
-
-(c.phone||"").toLowerCase().includes(search)
-
-).forEach(c=>{
-
-const li=document.createElement("li");
-
-const row=document.createElement("div");
-
-row.className="item";
-
-const info=document.createElement("div");
-
-info.className="item-info";
-
-const title=document.createElement("strong");
-
-title.textContent=c.name;
-
-const phone=document.createElement("div");
-
-phone.textContent=c.phone||"Pas de téléphone";
-
-phone.style.color="#9ca3af";
-
-phone.style.marginTop="5px";
-
-info.appendChild(title);
-
-info.appendChild(phone);
-
-row.appendChild(info);
-
-if(c.phone){
-
-const wa=document.createElement("button");
-
-wa.className="whatsapp action";
-
-wa.textContent="WhatsApp";
-
-wa.onclick=()=>whatsapp(c.phone,c.name);
-
-row.appendChild(wa);
-
-}
-
-const btn=document.createElement("button");
-
-btn.className="danger action";
-
-btn.textContent="Supprimer";
-
-btn.onclick=()=>deleteClient(c.id);
-
-row.appendChild(btn);
-
-li.appendChild(row);
-
-list.appendChild(li);
-
-});
-
-if(list.children.length===0){
-
-const li=document.createElement("li");
-
-li.textContent="Aucun client enregistré.";
-
-list.appendChild(li);
-
-}
-
-}
-
-function renderSelect(){
-
-const select=document.getElementById("saleClient");
-
-const selected=select.value;
-
-select.innerHTML='<option value="">Choisir un client (facultatif)</option>';
-
-clients.forEach(c=>{
-
-const option=document.createElement("option");
-
-option.value=c.id;
-
-option.textContent=c.name;
-
-select.appendChild(option);
-
-});
-
-select.value=selected;
+  save();
 
 }
 
 function addSale(){
 
-const clientId=document.getElementById("saleClient").value;
+  const name=document.getElementById("saleName").value.trim()||"Client";
 
-const manualName=document.getElementById("saleName").value.trim();
+  const total=Number(document.getElementById("saleAmount").value);
 
-const client=clients.find(c=>String(c.id)===clientId);
+  const pInput=document.getElementById("salePaid").value;
 
-const name=client?client.name:manualName;
+  const paidNow=pInput===""?0:Number(pInput);
 
-const amount=Number(document.getElementById("saleAmount").value);
+  if(!total||total<=0){alert("Entre un montant de vente valide.");return;}
 
-if(!name||!Number.isFinite(amount)||amount<=0){
+  if(paidNow<0||paidNow>total){alert("Le montant payé doit être entre 0 et le montant total.");return;}
 
-alert("Choisissez un client ou entrez son nom et un montant valide.");
+  operations.unshift({
 
-return;
+    type:"sale",clientName:name,amount:total,paidAmount:paidNow,
 
-}
+    date:new Date().toISOString()
 
-operations.push({
+  });
 
-id:Date.now()+Math.random(),
+  document.getElementById("saleName").value="";
 
-type:"sale",name,amount,
+  document.getElementById("saleAmount").value="";
 
-date:new Date().toLocaleString("fr-FR")
+  document.getElementById("salePaid").value="";
 
-});
-
-document.getElementById("saleName").value="";
-
-document.getElementById("saleAmount").value="";
-
-document.getElementById("saleClient").value="";
-
-saveData();
-
-alert("Vente enregistrée !");
+  save();
 
 }
 
 function addExpense(){
 
-const name=document.getElementById("expenseName").value.trim();
+  const name=document.getElementById("expenseName").value.trim()||"Dépense";
 
-const amount=Number(document.getElementById("expenseAmount").value);
+  const total=Number(document.getElementById("expenseAmount").value);
 
-if(!name||!Number.isFinite(amount)||amount<=0){
+  if(!total||total<=0){alert("Entre un montant de dépense valide.");return;}
 
-alert("Entrez une description et un montant valide.");
+  operations.unshift({type:"expense",name,amount:total,date:new Date().toISOString()});
 
-return;
+  document.getElementById("expenseName").value="";
 
-}
+  document.getElementById("expenseAmount").value="";
 
-operations.push({
-
-id:Date.now()+Math.random(),
-
-type:"expense",name,amount,
-
-date:new Date().toLocaleString("fr-FR")
-
-});
-
-document.getElementById("expenseName").value="";
-
-document.getElementById("expenseAmount").value="";
-
-saveData();
-
-alert("Dépense enregistrée !");
+  save();
 
 }
 
-function deleteOperation(id){
+function clientDue(name){
 
-const op=operations.find(o=>o.id==id);
+  return operations.filter(o=>normType(o)==="sale"&&saleName(o).toLowerCase()===name.toLowerCase())
 
-if(!op)return;
-
-const label=op.type==="sale"?"vente":"dépense";
-
-if(confirm("Supprimer cette "+label+" de "+money(op.amount)+" ?")){
-
-operations=operations.filter(o=>o.id!=id);
-
-saveData();
+    .reduce((s,o)=>s+due(o),0);
 
 }
+
+function clientSales(name){
+
+  return operations.filter(o=>normType(o)==="sale"&&saleName(o).toLowerCase()===name.toLowerCase())
+
+    .reduce((s,o)=>s+amount(o),0);
+
+}
+
+function addPayment(i){
+
+  const o=operations[i];
+
+  const remaining=due(o);
+
+  if(remaining<=0){alert("Cette vente est déjà payée.");return;}
+
+  const v=Number(prompt("Montant du paiement reçu (reste dû : "+money(remaining)+")"));
+
+  if(!v||v<=0){return;}
+
+  if(v>remaining){alert("Le montant dépasse le reste dû.");return;}
+
+  o.paidAmount=paid(o)+v;
+
+  save();
+
+}
+
+function deleteClient(i){
+
+  if(confirm("Supprimer ce client ? Les ventes restent dans l'historique.")){
+
+    clients.splice(i,1);save();
+
+  }
+
+}
+
+function deleteOperation(i){
+
+  if(confirm("Supprimer cette opération ?")){
+
+    operations.splice(i,1);save();
+
+  }
 
 }
 
 function render(){
 
-const sales=operations.filter(o=>o.type==="sale").reduce((sum,o)=>sum+Number(o.amount),0);
+  const sales=operations.filter(o=>normType(o)==="sale");
 
-const expenses=operations.filter(o=>o.type==="expense").reduce((sum,o)=>sum+Number(o.amount),0);
+  const expenses=operations.filter(o=>normType(o)==="expense");
 
-document.getElementById("sales").textContent=money(sales);
+  const totalSales=sales.reduce((s,o)=>s+amount(o),0);
 
-document.getElementById("expenses").textContent=money(expenses);
+  const totalCollected=sales.reduce((s,o)=>s+paid(o),0);
 
-document.getElementById("profit").textContent=money(sales-expenses);
+  const totalDue=sales.reduce((s,o)=>s+due(o),0);
 
-document.getElementById("clientCount").textContent=clients.length;
+  const totalExpenses=expenses.reduce((s,o)=>s+amount(o),0);
 
-renderClients();
+  document.getElementById("totalSales").textContent=money(totalSales);
 
-renderSelect();
+  document.getElementById("totalExpenses").textContent=money(totalExpenses);
 
-const history=document.getElementById("history");
+  document.getElementById("profit").textContent=money(totalSales-totalExpenses);
 
-history.innerHTML="";
+  document.getElementById("collected").textContent=money(totalCollected);
 
-operations.slice().reverse().forEach(o=>{
+  document.getElementById("debts").textContent=money(totalDue);
 
-const li=document.createElement("li");
+  document.getElementById("clientCount").textContent=clients.length;
 
-const row=document.createElement("div");
+  const cl=document.getElementById("clientsList");
 
-row.className="item";
+  cl.innerHTML="";
 
-const info=document.createElement("div");
+  if(!clients.length)cl.innerHTML="<p>Aucun client pour le moment.</p>";
 
-info.className="item-info";
+  clients.forEach((c,i)=>{
 
-info.textContent=(o.type==="sale"?"🟢 Vente : ":"🔴 Dépense : ")+
+    const n=nameOf(c),ph=phoneOf(c),d=clientDue(n);
 
-o.name+" — "+money(o.amount)+" — "+(o.date||"");
+    const div=document.createElement("div");div.className="item";
 
-const btn=document.createElement("button");
+    div.innerHTML="<strong>"+escapeHtml(n)+"</strong><p>Téléphone : "+escapeHtml(ph||"Non renseigné")+"</p><p>Ventes : "+money(clientSales(n))+"</p><p class='"+(d>0?"red":"green")+"'>Reste à payer : "+money(d)+"</p>";
 
-btn.className="danger action";
+    if(d>0&&ph){
 
-btn.textContent="Supprimer";
+      const msg="Bonjour "+n+", il reste "+money(d)+" à régler pour tes achats. Merci beaucoup 🙏";
 
-btn.onclick=()=>deleteOperation(o.id);
+      const b=document.createElement("button");b.className="whatsapp";b.textContent="📱 Rappel WhatsApp";
 
-row.appendChild(info);
+      b.onclick=()=>window.open(whatsappLink(ph,msg),"_blank");
 
-row.appendChild(btn);
+      div.appendChild(b);
 
-li.appendChild(row);
+    }
 
-history.appendChild(li);
+    const del=document.createElement("button");del.className="danger";del.textContent="Supprimer le client";del.onclick=()=>deleteClient(i);
 
-});
+    div.appendChild(del);cl.appendChild(div);
 
-if(operations.length===0){
+  });
 
-const li=document.createElement("li");
+  const h=document.getElementById("history");h.innerHTML="";
 
-li.textContent="Aucune opération pour le moment.";
+  if(!operations.length)h.innerHTML="<p>Aucune opération enregistrée.</p>";
 
-history.appendChild(li);
+  operations.forEach((o,i)=>{
+
+    const t=normType(o),div=document.createElement("div");div.className="item";
+
+    const date=o.date?new Date(o.date).toLocaleDateString("fr-FR"):"";
+
+    if(t==="sale"){
+
+      const total=amount(o),p=paid(o),d=due(o);
+
+      div.innerHTML="<strong>💰 Vente — "+escapeHtml(saleName(o))+"</strong><p>Date : "+escapeHtml(date)+"</p><p>Total : "+money(total)+"</p><p>Payé : "+money(p)+"</p><p class='"+(d>0?"red":"green")+"'>Reste dû : "+money(d)+"</p>";
+
+      if(d>0){
+
+        const b=document.createElement("button");b.textContent="💵 Encaisser un paiement";b.onclick=()=>addPayment(i);div.appendChild(b);
+
+      }else{
+
+        const ptag=document.createElement("p");ptag.textContent="✅ Payée";ptag.className="green";div.appendChild(ptag);
+
+      }
+
+    }else if(t==="expense"){
+
+      div.innerHTML="<strong>📉 Dépense — "+escapeHtml(o.name||o.description||"Dépense")+"</strong><p>Date : "+escapeHtml(date)+"</p><p>Montant : "+money(amount(o))+"</p>";
+
+    }else{
+
+      div.innerHTML="<strong>"+escapeHtml(o.name||"Opération")+"</strong><p>"+money(amount(o))+"</p>";
+
+    }
+
+    const del=document.createElement("button");del.className="danger";del.textContent="Supprimer l'opération";del.onclick=()=>deleteOperation(i);
+
+    div.appendChild(del);h.appendChild(div);
+
+  });
 
 }
+
+function escapeHtml(s){
+
+  return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 }
 
