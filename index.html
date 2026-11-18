@@ -32,7 +32,7 @@ h1{color:#39d98a;font-size:28px;margin-bottom:5px}
 
 input,select{width:100%;padding:14px;margin:7px 0;background:#26364c;color:white;border:0;border-radius:8px;font-size:16px}
 
-button{width:100%;padding:14px;border:0;border-radius:8px;background:#39d98a;color:#07130d;font-weight:bold;font-size:15px;margin-top:8px}
+button{padding:12px;border:0;border-radius:8px;background:#39d98a;color:#07130d;font-weight:bold;font-size:14px;margin-top:8px}
 
 h2{font-size:19px}
 
@@ -45,6 +45,12 @@ ul{padding:0;margin:0}
 .danger{background:#a83d48;color:white}
 
 small{color:#9ca3af}
+
+.action{width:auto;margin-left:8px;padding:8px 10px}
+
+.item{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+
+.item-info{flex:1;min-width:140px}
 
 </style>
 
@@ -64,37 +70,13 @@ small{color:#9ca3af}
 
 <div class="grid">
 
-<div class="card">
+<div class="card"><div class="label">VENTES</div><div class="value" id="sales">0 FCFA</div></div>
 
-<div class="label">VENTES</div>
+<div class="card"><div class="label">DÉPENSES</div><div class="value" id="expenses">0 FCFA</div></div>
 
-<div class="value" id="sales">0 FCFA</div>
+<div class="card"><div class="label">BÉNÉFICES</div><div class="value" id="profit">0 FCFA</div></div>
 
-</div>
-
-<div class="card">
-
-<div class="label">DÉPENSES</div>
-
-<div class="value" id="expenses">0 FCFA</div>
-
-</div>
-
-<div class="card">
-
-<div class="label">BÉNÉFICES</div>
-
-<div class="value" id="profit">0 FCFA</div>
-
-</div>
-
-<div class="card">
-
-<div class="label">CLIENTS</div>
-
-<div class="value" id="clientCount">0</div>
-
-</div>
+<div class="card"><div class="label">CLIENTS</div><div class="value" id="clientCount">0</div></div>
 
 </div>
 
@@ -124,11 +106,7 @@ small{color:#9ca3af}
 
 <h2>Enregistrer une vente</h2>
 
-<select id="saleClient">
-
-<option value="">Choisir un client (facultatif)</option>
-
-</select>
+<select id="saleClient"><option value="">Choisir un client (facultatif)</option></select>
 
 <input id="saleName" placeholder="Nom du client si non enregistré">
 
@@ -160,9 +138,13 @@ small{color:#9ca3af}
 
 <script>
 
-let clients = JSON.parse(localStorage.getItem("cf_clients") || "[]");
+let clients=JSON.parse(localStorage.getItem("cf_clients")||"[]");
 
-let operations = JSON.parse(localStorage.getItem("cashflow_operations") || "[]");
+let operations=JSON.parse(localStorage.getItem("cashflow_operations")||"[]");
+
+// Ajouter un identifiant aux anciennes opérations si nécessaire
+
+operations.forEach(o=>{if(!o.id)o.id=Date.now()+Math.random()});
 
 function money(n){
 
@@ -186,23 +168,9 @@ const name=document.getElementById("clientName").value.trim();
 
 const phone=document.getElementById("clientPhone").value.trim();
 
-if(!name){
+if(!name){alert("Entrez le nom du client.");return;}
 
-alert("Entrez le nom du client.");
-
-return;
-
-}
-
-clients.push({
-
-id:Date.now(),
-
-name:name,
-
-phone:phone
-
-});
+clients.push({id:Date.now(),name:name,phone:phone});
 
 document.getElementById("clientName").value="";
 
@@ -211,6 +179,22 @@ document.getElementById("clientPhone").value="";
 saveData();
 
 alert("Client enregistré !");
+
+}
+
+function deleteClient(id){
+
+const client=clients.find(c=>c.id===id);
+
+if(!client)return;
+
+if(confirm("Supprimer le client "+client.name+" ?")){
+
+clients=clients.filter(c=>c.id!==id);
+
+saveData();
+
+}
 
 }
 
@@ -224,13 +208,21 @@ list.innerHTML="";
 
 clients.filter(c=>
 
-c.name.toLowerCase().includes(search) ||
+(c.name||"").toLowerCase().includes(search)||
 
-c.phone.toLowerCase().includes(search)
+(c.phone||"").toLowerCase().includes(search)
 
 ).forEach(c=>{
 
 const li=document.createElement("li");
+
+const row=document.createElement("div");
+
+row.className="item";
+
+const info=document.createElement("div");
+
+info.className="item-info";
 
 const title=document.createElement("strong");
 
@@ -238,15 +230,29 @@ title.textContent=c.name;
 
 const phone=document.createElement("div");
 
-phone.textContent=c.phone || "Pas de téléphone";
+phone.textContent=c.phone||"Pas de téléphone";
 
 phone.style.color="#9ca3af";
 
 phone.style.marginTop="5px";
 
-li.appendChild(title);
+info.appendChild(title);
 
-li.appendChild(phone);
+info.appendChild(phone);
+
+const btn=document.createElement("button");
+
+btn.className="danger action";
+
+btn.textContent="Supprimer";
+
+btn.onclick=()=>deleteClient(c.id);
+
+row.appendChild(info);
+
+row.appendChild(btn);
+
+li.appendChild(row);
 
 list.appendChild(li);
 
@@ -296,11 +302,11 @@ const manualName=document.getElementById("saleName").value.trim();
 
 const client=clients.find(c=>String(c.id)===clientId);
 
-const name=client ? client.name : manualName;
+const name=client?client.name:manualName;
 
 const amount=Number(document.getElementById("saleAmount").value);
 
-if(!name || !Number.isFinite(amount) || amount<=0){
+if(!name||!Number.isFinite(amount)||amount<=0){
 
 alert("Choisissez un client ou entrez son nom et un montant valide.");
 
@@ -310,11 +316,9 @@ return;
 
 operations.push({
 
-type:"sale",
+id:Date.now()+Math.random(),
 
-name:name,
-
-amount:amount,
+type:"sale",name:name,amount:amount,
 
 date:new Date().toLocaleString("fr-FR")
 
@@ -338,7 +342,7 @@ const name=document.getElementById("expenseName").value.trim();
 
 const amount=Number(document.getElementById("expenseAmount").value);
 
-if(!name || !Number.isFinite(amount) || amount<=0){
+if(!name||!Number.isFinite(amount)||amount<=0){
 
 alert("Entrez une description et un montant valide.");
 
@@ -348,11 +352,9 @@ return;
 
 operations.push({
 
-type:"expense",
+id:Date.now()+Math.random(),
 
-name:name,
-
-amount:amount,
+type:"expense",name:name,amount:amount,
 
 date:new Date().toLocaleString("fr-FR")
 
@@ -365,6 +367,24 @@ document.getElementById("expenseAmount").value="";
 saveData();
 
 alert("Dépense enregistrée !");
+
+}
+
+function deleteOperation(id){
+
+const op=operations.find(o=>o.id===id);
+
+if(!op)return;
+
+const label=op.type==="sale"?"vente":"dépense";
+
+if(confirm("Supprimer cette "+label+" de "+money(op.amount)+" ?")){
+
+operations=operations.filter(o=>o.id!==id);
+
+saveData();
+
+}
 
 }
 
@@ -398,9 +418,31 @@ operations.slice().reverse().forEach(o=>{
 
 const li=document.createElement("li");
 
-li.textContent=(o.type==="sale"?"🟢 Vente : ":"🔴 Dépense : ")+
+const row=document.createElement("div");
+
+row.className="item";
+
+const info=document.createElement("div");
+
+info.className="item-info";
+
+info.textContent=(o.type==="sale"?"🟢 Vente : ":"🔴 Dépense : ")+
 
 o.name+" — "+money(o.amount)+" — "+(o.date||"");
+
+const btn=document.createElement("button");
+
+btn.className="danger action";
+
+btn.textContent="Supprimer";
+
+btn.onclick=()=>deleteOperation(o.id);
+
+row.appendChild(info);
+
+row.appendChild(btn);
+
+li.appendChild(row);
 
 history.appendChild(li);
 
