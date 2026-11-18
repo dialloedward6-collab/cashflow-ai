@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 
 <html lang="fr">
@@ -6,7 +8,7 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>CashFlow AI</title>
 
@@ -14,31 +16,29 @@
 
 *{box-sizing:border-box}
 
-body{margin:0;font-family:Arial;background:#0b1220;color:white;padding:20px}
+body{margin:0;background:#0b1220;color:white;font-family:Arial;padding:20px}
 
-header{padding:20px 0}
+header{padding:15px 0}
 
-h1{color:#39d98a;margin-bottom:5px}
+h1{color:#39d98a;font-size:28px}
 
-p{color:#9ca3af}
+.sub{color:#9ca3af}
 
-.card{background:#172235;padding:20px;border-radius:15px;margin:15px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{background:#172235;padding:18px;border-radius:14px;margin:12px 0}
 
-.value{font-size:24px;font-weight:bold;color:#39d98a}
+.label{color:#9ca3af;font-size:13px}
 
-input,button{width:100%;padding:14px;margin:7px 0;border:0;border-radius:9px;font-size:16px}
+.value{font-size:21px;font-weight:bold;margin-top:10px;color:#39d98a}
 
-input{background:#25344b;color:white}
+input{width:100%;padding:14px;margin:7px 0;background:#26364c;color:white;border:0;border-radius:8px;font-size:16px}
 
-button{background:#39d98a;color:#07130d;font-weight:bold}
+button{width:100%;padding:14px;border:0;border-radius:8px;background:#39d98a;color:#07130d;font-weight:bold;font-size:16px;margin-top:8px}
 
-h2{font-size:18px}
+li{padding:12px;border-bottom:1px solid #344258;list-style:none}
 
-small{color:#9ca3af}
-
-li{padding:10px;border-bottom:1px solid #344258}
+ul{padding:0}
 
 </style>
 
@@ -50,4 +50,136 @@ li{padding:10px;border-bottom:1px solid #344258}
 
 <h1>CashFlow AI</h1>
 
-<p>Votre gestion commerciale
+<p class="sub">Votre gestion commerciale intelligente</p>
+
+</header>
+
+<div class="grid">
+
+<div class="card"><div class="label">VENTES</div><div class="value" id="sales">0 FCFA</div></div>
+
+<div class="card"><div class="label">DÉPENSES</div><div class="value" id="expenses">0 FCFA</div></div>
+
+<div class="card"><div class="label">BÉNÉFICES</div><div class="value" id="profit">0 FCFA</div></div>
+
+<div class="card"><div class="label">TRANSACTIONS</div><div class="value" id="count">0</div></div>
+
+</div>
+
+<div class="card">
+
+<h2>Ajouter une vente</h2>
+
+<input id="client" placeholder="Nom du client">
+
+<input id="sale" type="number" placeholder="Montant en FCFA">
+
+<button onclick="addSale()">+ Enregistrer la vente</button>
+
+</div>
+
+<div class="card">
+
+<h2>Ajouter une dépense</h2>
+
+<input id="expenseName" placeholder="Description">
+
+<input id="expense" type="number" placeholder="Montant en FCFA">
+
+<button onclick="addExpense()">+ Enregistrer la dépense</button>
+
+</div>
+
+<div class="card">
+
+<h2>Historique des opérations</h2>
+
+<ul id="history"></ul>
+
+</div>
+
+<script>
+
+let operations=JSON.parse(localStorage.getItem("cashflow_operations")||"[]");
+
+function money(n){return n.toLocaleString("fr-FR")+" FCFA"}
+
+function update(){
+
+let sales=operations.filter(x=>x.type==="sale").reduce((s,x)=>s+x.amount,0);
+
+let expenses=operations.filter(x=>x.type==="expense").reduce((s,x)=>s+x.amount,0);
+
+document.getElementById("sales").textContent=money(sales);
+
+document.getElementById("expenses").textContent=money(expenses);
+
+document.getElementById("profit").textContent=money(sales-expenses);
+
+document.getElementById("count").textContent=operations.length;
+
+document.getElementById("history").innerHTML="";
+
+operations.slice().reverse().forEach(x=>{
+
+let li=document.createElement("li");
+
+li.textContent=(x.type==="sale"?"Vente : ":"Dépense : ")+x.name+" — "+money(x.amount);
+
+document.getElementById("history").appendChild(li);
+
+});
+
+}
+
+function save(){
+
+localStorage.setItem("cashflow_operations",JSON.stringify(operations));
+
+update();
+
+}
+
+function addSale(){
+
+let name=document.getElementById("client").value.trim();
+
+let amount=Number(document.getElementById("sale").value);
+
+if(!name||!Number.isFinite(amount)||amount<=0){alert("Veuillez remplir les champs correctement.");return;}
+
+operations.push({type:"sale",name,amount});
+
+document.getElementById("client").value="";
+
+document.getElementById("sale").value="";
+
+save();
+
+}
+
+function addExpense(){
+
+let name=document.getElementById("expenseName").value.trim();
+
+let amount=Number(document.getElementById("expense").value);
+
+if(!name||!Number.isFinite(amount)||amount<=0){alert("Veuillez remplir les champs correctement.");return;}
+
+operations.push({type:"expense",name,amount});
+
+document.getElementById("expenseName").value="";
+
+document.getElementById("expense").value="";
+
+save();
+
+}
+
+update();
+
+</script>
+
+</body>
+
+</html>
