@@ -46,11 +46,13 @@ ul{padding:0;margin:0}
 
 small{color:#9ca3af}
 
-.action{width:auto;margin-left:8px;padding:8px 10px}
+.action{width:auto;padding:8px 10px}
 
 .item{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 
 .item-info{flex:1;min-width:140px}
+
+.whatsapp{background:#25D366;color:white}
 
 </style>
 
@@ -86,7 +88,7 @@ small{color:#9ca3af}
 
 <input id="clientName" placeholder="Nom du client">
 
-<input id="clientPhone" type="tel" placeholder="Téléphone du client">
+<input id="clientPhone" type="tel" placeholder="Téléphone (ex: 77 123 45 67)">
 
 <button onclick="addClient()">+ Enregistrer le client</button>
 
@@ -142,8 +144,6 @@ let clients=JSON.parse(localStorage.getItem("cf_clients")||"[]");
 
 let operations=JSON.parse(localStorage.getItem("cashflow_operations")||"[]");
 
-// Ajouter un identifiant aux anciennes opérations si nécessaire
-
 operations.forEach(o=>{if(!o.id)o.id=Date.now()+Math.random()});
 
 function money(n){
@@ -170,7 +170,7 @@ const phone=document.getElementById("clientPhone").value.trim();
 
 if(!name){alert("Entrez le nom du client.");return;}
 
-clients.push({id:Date.now(),name:name,phone:phone});
+clients.push({id:Date.now()+Math.random(),name,phone});
 
 document.getElementById("clientName").value="";
 
@@ -184,17 +184,33 @@ alert("Client enregistré !");
 
 function deleteClient(id){
 
-const client=clients.find(c=>c.id===id);
+const client=clients.find(c=>c.id==id);
 
 if(!client)return;
 
 if(confirm("Supprimer le client "+client.name+" ?")){
 
-clients=clients.filter(c=>c.id!==id);
+clients=clients.filter(c=>c.id!=id);
 
 saveData();
 
 }
+
+}
+
+function whatsapp(phone,name){
+
+let number=phone.replace(/\D/g,"");
+
+if(number.startsWith("00"))number=number.substring(2);
+
+if(number.length===9)number="221"+number;
+
+const message="Bonjour "+name+", je vous contacte concernant nos échanges.";
+
+const url="https://wa.me/"+number+"?text="+encodeURIComponent(message);
+
+window.open(url,"_blank");
 
 }
 
@@ -240,6 +256,22 @@ info.appendChild(title);
 
 info.appendChild(phone);
 
+row.appendChild(info);
+
+if(c.phone){
+
+const wa=document.createElement("button");
+
+wa.className="whatsapp action";
+
+wa.textContent="WhatsApp";
+
+wa.onclick=()=>whatsapp(c.phone,c.name);
+
+row.appendChild(wa);
+
+}
+
 const btn=document.createElement("button");
 
 btn.className="danger action";
@@ -247,8 +279,6 @@ btn.className="danger action";
 btn.textContent="Supprimer";
 
 btn.onclick=()=>deleteClient(c.id);
-
-row.appendChild(info);
 
 row.appendChild(btn);
 
@@ -318,7 +348,7 @@ operations.push({
 
 id:Date.now()+Math.random(),
 
-type:"sale",name:name,amount:amount,
+type:"sale",name,amount,
 
 date:new Date().toLocaleString("fr-FR")
 
@@ -354,7 +384,7 @@ operations.push({
 
 id:Date.now()+Math.random(),
 
-type:"expense",name:name,amount:amount,
+type:"expense",name,amount,
 
 date:new Date().toLocaleString("fr-FR")
 
@@ -372,7 +402,7 @@ alert("Dépense enregistrée !");
 
 function deleteOperation(id){
 
-const op=operations.find(o=>o.id===id);
+const op=operations.find(o=>o.id==id);
 
 if(!op)return;
 
@@ -380,7 +410,7 @@ const label=op.type==="sale"?"vente":"dépense";
 
 if(confirm("Supprimer cette "+label+" de "+money(op.amount)+" ?")){
 
-operations=operations.filter(o=>o.id!==id);
+operations=operations.filter(o=>o.id!=id);
 
 saveData();
 
@@ -390,13 +420,9 @@ saveData();
 
 function render(){
 
-const sales=operations.filter(o=>o.type==="sale")
+const sales=operations.filter(o=>o.type==="sale").reduce((sum,o)=>sum+Number(o.amount),0);
 
-.reduce((sum,o)=>sum+Number(o.amount),0);
-
-const expenses=operations.filter(o=>o.type==="expense")
-
-.reduce((sum,o)=>sum+Number(o.amount),0);
+const expenses=operations.filter(o=>o.type==="expense").reduce((sum,o)=>sum+Number(o.amount),0);
 
 document.getElementById("sales").textContent=money(sales);
 
