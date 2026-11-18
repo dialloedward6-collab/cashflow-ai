@@ -16,29 +16,35 @@
 
 *{box-sizing:border-box}
 
-body{margin:0;background:#0b1220;color:white;font-family:Arial;padding:20px}
+body{margin:0;padding:18px;background:#0b1220;color:white;font-family:Arial,sans-serif}
 
 header{padding:15px 0}
 
-h1{color:#39d98a;font-size:28px}
+h1{color:#39d98a;font-size:28px;margin-bottom:5px}
 
-.sub{color:#9ca3af}
+.sub,.label{color:#9ca3af}
 
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{background:#172235;padding:18px;border-radius:14px;margin:14px 0}
 
-.card{background:#172235;padding:18px;border-radius:14px;margin:12px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-.label{color:#9ca3af;font-size:13px}
+.value{font-size:20px;font-weight:bold;color:#39d98a;margin-top:9px}
 
-.value{font-size:21px;font-weight:bold;margin-top:10px;color:#39d98a}
+input,select{width:100%;padding:14px;margin:7px 0;background:#26364c;color:white;border:0;border-radius:8px;font-size:16px}
 
-input{width:100%;padding:14px;margin:7px 0;background:#26364c;color:white;border:0;border-radius:8px;font-size:16px}
+button{width:100%;padding:14px;border:0;border-radius:8px;background:#39d98a;color:#07130d;font-weight:bold;font-size:15px;margin-top:8px}
 
-button{width:100%;padding:14px;border:0;border-radius:8px;background:#39d98a;color:#07130d;font-weight:bold;font-size:16px;margin-top:8px}
+h2{font-size:19px}
 
-li{padding:12px;border-bottom:1px solid #344258;list-style:none}
+li{list-style:none;padding:12px 0;border-bottom:1px solid #344258}
 
-ul{padding:0}
+ul{padding:0;margin:0}
+
+.secondary{background:#344258;color:white}
+
+.danger{background:#a83d48;color:white}
+
+small{color:#9ca3af}
 
 </style>
 
@@ -54,25 +60,79 @@ ul{padding:0}
 
 </header>
 
+<h2>Tableau de bord</h2>
+
 <div class="grid">
 
-<div class="card"><div class="label">VENTES</div><div class="value" id="sales">0 FCFA</div></div>
+<div class="card">
 
-<div class="card"><div class="label">DÉPENSES</div><div class="value" id="expenses">0 FCFA</div></div>
+<div class="label">VENTES</div>
 
-<div class="card"><div class="label">BÉNÉFICES</div><div class="value" id="profit">0 FCFA</div></div>
-
-<div class="card"><div class="label">TRANSACTIONS</div><div class="value" id="count">0</div></div>
+<div class="value" id="sales">0 FCFA</div>
 
 </div>
 
 <div class="card">
 
-<h2>Ajouter une vente</h2>
+<div class="label">DÉPENSES</div>
 
-<input id="client" placeholder="Nom du client">
+<div class="value" id="expenses">0 FCFA</div>
 
-<input id="sale" type="number" placeholder="Montant en FCFA">
+</div>
+
+<div class="card">
+
+<div class="label">BÉNÉFICES</div>
+
+<div class="value" id="profit">0 FCFA</div>
+
+</div>
+
+<div class="card">
+
+<div class="label">CLIENTS</div>
+
+<div class="value" id="clientCount">0</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>Ajouter un client</h2>
+
+<input id="clientName" placeholder="Nom du client">
+
+<input id="clientPhone" type="tel" placeholder="Téléphone du client">
+
+<button onclick="addClient()">+ Enregistrer le client</button>
+
+</div>
+
+<div class="card">
+
+<h2>Mes clients</h2>
+
+<input id="searchClient" placeholder="Rechercher un client..." oninput="renderClients()">
+
+<ul id="clientList"></ul>
+
+</div>
+
+<div class="card">
+
+<h2>Enregistrer une vente</h2>
+
+<select id="saleClient">
+
+<option value="">Choisir un client (facultatif)</option>
+
+</select>
+
+<input id="saleName" placeholder="Nom du client si non enregistré">
+
+<input id="saleAmount" type="number" min="1" placeholder="Montant en FCFA">
 
 <button onclick="addSale()">+ Enregistrer la vente</button>
 
@@ -80,11 +140,11 @@ ul{padding:0}
 
 <div class="card">
 
-<h2>Ajouter une dépense</h2>
+<h2>Enregistrer une dépense</h2>
 
-<input id="expenseName" placeholder="Description">
+<input id="expenseName" placeholder="Description de la dépense">
 
-<input id="expense" type="number" placeholder="Montant en FCFA">
+<input id="expenseAmount" type="number" min="1" placeholder="Montant en FCFA">
 
 <button onclick="addExpense()">+ Enregistrer la dépense</button>
 
@@ -100,15 +160,223 @@ ul{padding:0}
 
 <script>
 
-let operations=JSON.parse(localStorage.getItem("cashflow_operations")||"[]");
+let clients = JSON.parse(localStorage.getItem("cf_clients") || "[]");
 
-function money(n){return n.toLocaleString("fr-FR")+" FCFA"}
+let operations = JSON.parse(localStorage.getItem("cashflow_operations") || "[]");
 
-function update(){
+function money(n){
 
-let sales=operations.filter(x=>x.type==="sale").reduce((s,x)=>s+x.amount,0);
+return Number(n).toLocaleString("fr-FR")+" FCFA";
 
-let expenses=operations.filter(x=>x.type==="expense").reduce((s,x)=>s+x.amount,0);
+}
+
+function saveData(){
+
+localStorage.setItem("cf_clients",JSON.stringify(clients));
+
+localStorage.setItem("cashflow_operations",JSON.stringify(operations));
+
+render();
+
+}
+
+function addClient(){
+
+const name=document.getElementById("clientName").value.trim();
+
+const phone=document.getElementById("clientPhone").value.trim();
+
+if(!name){
+
+alert("Entrez le nom du client.");
+
+return;
+
+}
+
+clients.push({
+
+id:Date.now(),
+
+name:name,
+
+phone:phone
+
+});
+
+document.getElementById("clientName").value="";
+
+document.getElementById("clientPhone").value="";
+
+saveData();
+
+alert("Client enregistré !");
+
+}
+
+function renderClients(){
+
+const list=document.getElementById("clientList");
+
+const search=document.getElementById("searchClient").value.toLowerCase();
+
+list.innerHTML="";
+
+clients.filter(c=>
+
+c.name.toLowerCase().includes(search) ||
+
+c.phone.toLowerCase().includes(search)
+
+).forEach(c=>{
+
+const li=document.createElement("li");
+
+const title=document.createElement("strong");
+
+title.textContent=c.name;
+
+const phone=document.createElement("div");
+
+phone.textContent=c.phone || "Pas de téléphone";
+
+phone.style.color="#9ca3af";
+
+phone.style.marginTop="5px";
+
+li.appendChild(title);
+
+li.appendChild(phone);
+
+list.appendChild(li);
+
+});
+
+if(list.children.length===0){
+
+const li=document.createElement("li");
+
+li.textContent="Aucun client enregistré.";
+
+list.appendChild(li);
+
+}
+
+}
+
+function renderSelect(){
+
+const select=document.getElementById("saleClient");
+
+const selected=select.value;
+
+select.innerHTML='<option value="">Choisir un client (facultatif)</option>';
+
+clients.forEach(c=>{
+
+const option=document.createElement("option");
+
+option.value=c.id;
+
+option.textContent=c.name;
+
+select.appendChild(option);
+
+});
+
+select.value=selected;
+
+}
+
+function addSale(){
+
+const clientId=document.getElementById("saleClient").value;
+
+const manualName=document.getElementById("saleName").value.trim();
+
+const client=clients.find(c=>String(c.id)===clientId);
+
+const name=client ? client.name : manualName;
+
+const amount=Number(document.getElementById("saleAmount").value);
+
+if(!name || !Number.isFinite(amount) || amount<=0){
+
+alert("Choisissez un client ou entrez son nom et un montant valide.");
+
+return;
+
+}
+
+operations.push({
+
+type:"sale",
+
+name:name,
+
+amount:amount,
+
+date:new Date().toLocaleString("fr-FR")
+
+});
+
+document.getElementById("saleName").value="";
+
+document.getElementById("saleAmount").value="";
+
+document.getElementById("saleClient").value="";
+
+saveData();
+
+alert("Vente enregistrée !");
+
+}
+
+function addExpense(){
+
+const name=document.getElementById("expenseName").value.trim();
+
+const amount=Number(document.getElementById("expenseAmount").value);
+
+if(!name || !Number.isFinite(amount) || amount<=0){
+
+alert("Entrez une description et un montant valide.");
+
+return;
+
+}
+
+operations.push({
+
+type:"expense",
+
+name:name,
+
+amount:amount,
+
+date:new Date().toLocaleString("fr-FR")
+
+});
+
+document.getElementById("expenseName").value="";
+
+document.getElementById("expenseAmount").value="";
+
+saveData();
+
+alert("Dépense enregistrée !");
+
+}
+
+function render(){
+
+const sales=operations.filter(o=>o.type==="sale")
+
+.reduce((sum,o)=>sum+Number(o.amount),0);
+
+const expenses=operations.filter(o=>o.type==="expense")
+
+.reduce((sum,o)=>sum+Number(o.amount),0);
 
 document.getElementById("sales").textContent=money(sales);
 
@@ -116,67 +384,41 @@ document.getElementById("expenses").textContent=money(expenses);
 
 document.getElementById("profit").textContent=money(sales-expenses);
 
-document.getElementById("count").textContent=operations.length;
+document.getElementById("clientCount").textContent=clients.length;
 
-document.getElementById("history").innerHTML="";
+renderClients();
 
-operations.slice().reverse().forEach(x=>{
+renderSelect();
 
-let li=document.createElement("li");
+const history=document.getElementById("history");
 
-li.textContent=(x.type==="sale"?"Vente : ":"Dépense : ")+x.name+" — "+money(x.amount);
+history.innerHTML="";
 
-document.getElementById("history").appendChild(li);
+operations.slice().reverse().forEach(o=>{
+
+const li=document.createElement("li");
+
+li.textContent=(o.type==="sale"?"🟢 Vente : ":"🔴 Dépense : ")+
+
+o.name+" — "+money(o.amount)+" — "+(o.date||"");
+
+history.appendChild(li);
 
 });
 
-}
+if(operations.length===0){
 
-function save(){
+const li=document.createElement("li");
 
-localStorage.setItem("cashflow_operations",JSON.stringify(operations));
+li.textContent="Aucune opération pour le moment.";
 
-update();
-
-}
-
-function addSale(){
-
-let name=document.getElementById("client").value.trim();
-
-let amount=Number(document.getElementById("sale").value);
-
-if(!name||!Number.isFinite(amount)||amount<=0){alert("Veuillez remplir les champs correctement.");return;}
-
-operations.push({type:"sale",name,amount});
-
-document.getElementById("client").value="";
-
-document.getElementById("sale").value="";
-
-save();
+history.appendChild(li);
 
 }
 
-function addExpense(){
-
-let name=document.getElementById("expenseName").value.trim();
-
-let amount=Number(document.getElementById("expense").value);
-
-if(!name||!Number.isFinite(amount)||amount<=0){alert("Veuillez remplir les champs correctement.");return;}
-
-operations.push({type:"expense",name,amount});
-
-document.getElementById("expenseName").value="";
-
-document.getElementById("expense").value="";
-
-save();
-
 }
 
-update();
+render();
 
 </script>
 
